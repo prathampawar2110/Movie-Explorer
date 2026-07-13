@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CineScope — Movie Explorer</title>
+    <link rel="stylesheet" href="style2.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">🎬</span>
+            <span class="brand-name">CineScope</span>
+        </div>
+        <div class="nav-search">
+            <div class="searchbar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchText" placeholder="Search movies, series..." autocomplete="off">
+                <button class="clear-btn" id="clearBtn" onclick="clearSearch()" title="Clear">✕</button>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="fav-toggle-btn" onclick="toggleFavoritesPanel()" id="favToggleBtn">
+                <span>❤️</span>
+                <span id="favBadge" class="fav-badge" style="display:none">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Discover Your Next<br><span class="gradient-text">Favorite Film</span></h1>
+            <p>Search millions of movies and TV shows powered by OMDB</p>
+        </div>
+        <div class="hero-bg-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+    </section>
+
+    <!-- ===== FILTERS ===== -->
+    <div class="filters-bar">
+        <div class="filter-chips">
+            <button class="chip active" onclick="filterByGenre(this, '')">All</button>
+            <button class="chip" onclick="filterByGenre(this, 'action')">Action</button>
+            <button class="chip" onclick="filterByGenre(this, 'comedy')">Comedy</button>
+            <button class="chip" onclick="filterByGenre(this, 'drama')">Drama</button>
+            <button class="chip" onclick="filterByGenre(this, 'horror')">Horror</button>
+            <button class="chip" onclick="filterByGenre(this, 'sci-fi')">Sci-Fi</button>
+            <button class="chip" onclick="filterByGenre(this, 'marvel')">Marvel</button>
+            <button class="chip" onclick="filterByGenre(this, 'adventure')">Adventure</button>
+        </div>
+        <div class="results-info">
+            <span id="resultsCount"></span>
+        </div>
+    </div>
+
+    <!-- ===== MAIN LAYOUT ===== -->
+    <div class="main-layout">
+
+        <!-- Movie Grid -->
+        <main class="movies-section">
+            <div id="movieList" class="movie-grid"></div>
+            <div id="loadingState" class="loading-state" style="display:none">
+                <div class="spinner"></div>
+                <p>Finding great movies…</p>
+            </div>
+        </main>
+
+        <!-- Favorites Sidebar -->
+        <aside id="favorites" class="favorites-sidebar" style="display:none">
+            <div class="fav-header">
+                <h2>❤️ Watchlist</h2>
+                <span id="favoritesTitle" class="fav-count">0 saved</span>
+            </div>
+            <div id="favoriteList" class="fav-list">
+                <p class="empty-fav">No movies saved yet.<br>Hit ❤️ on any movie to add.</p>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- ===== MODAL ===== -->
+    <div id="movieModal" class="modal" onclick="handleModalClick(event)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div id="movieDetails"></div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div id="toast" class="toast"></div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <span>🎬 CineScope</span>
+            <span>Powered by <a href="https://www.omdbapi.com" target="_blank">OMDB API</a></span>
+            <span>© 2026</span>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

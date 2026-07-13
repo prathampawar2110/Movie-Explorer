@@ -1,0 +1,287 @@
+const API_KEY = "a4914b67";
+const BASE_URL = "https://www.omdbapi.com/";
+let movies = [ ];
+
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+
+async function fetchMovies(searchText) {
+
+    const response = await fetch(
+        `${BASE_URL}?apikey=${API_KEY}&s=${encodeURIComponent(searchText)}`
+        // `${BASE_URL}?apikey=${API_KEY}&i=${movie.imdbID}&plot=full`
+    );
+
+    const data = await response.json();
+
+    if (data.Response === "False") {
+        return [];
+    }
+    return data.Search || [];
+};
+
+async function showDetails(id) {
+
+    try{
+        const response = await fetch(
+        `${BASE_URL}?apikey=${API_KEY}&i=${id}&plot=short`
+        );
+        
+        const movie = await response.json();
+
+        if (movie.Response === "False") {
+            alert("Movie Not Found");
+        return;}
+
+        // alert(movie.Plot); alert(movie.Country)
+        alert(movie.Plot + "\n\nCountry: " + movie.Country) 
+
+    }catch (error) {
+        console.log(error)
+        alert("something went wrong")
+    } 
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// async function fetchMovies(searchText) {
+
+//     const response = await fetch(
+//         `${BASE_URL}?apikey=${API_KEY}&s=${searchText}`
+//     );
+
+//     const data = await response.json();
+
+//     if (data.Response === "False") return [];
+
+//     const detailedMovies = await Promise.all(
+//         data.Search.map(async (movie) => {
+
+//             const res = await fetch(
+//                 `${BASE_URL}?apikey=${API_KEY}&i=${movie.imdbID}&plot=short`
+//             );
+
+//             return await res.json();
+//         })
+//     );
+
+//     return detailedMovies;
+// }
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+async function loadRandomMovies() {
+
+    const randomSearchTerms = [
+        "action",
+        "comedy",
+        "drama",
+        "adventure",
+        "marvel",
+        "sci-fi",
+        "horror"
+    ];
+
+    const randomTerm =
+    randomSearchTerms[
+        Math.floor(
+            Math.random() * randomSearchTerms.length
+        )
+    ];
+
+    const moviesFromAPI =
+    await fetchMovies(randomTerm);
+
+    movies = moviesFromAPI.map(movie => ({
+        id: movie.imdbID,
+        title: movie.Title,
+        year: movie.Year,
+        genre: movie.Genre,
+        subtitle: movie.Runtime,
+        description: movie.Plot,
+        image: movie.Poster,
+        country: movie.Country
+    }));
+
+    renderMovies(movies);
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+async function searchMovies() {
+
+    const searchText = document.getElementById("searchText").value.trim();
+
+       if (searchText === "") {
+        loadRandomMovies();
+        return;
+    }
+
+    const moviesFromAPI = await fetchMovies(searchText);
+
+    movies = moviesFromAPI.map(movie=> ({
+        id: movie.imdbID,
+        title: movie.Title,
+        year: movie.Year,
+        genre: movie.Genre,
+        subtitle: movie.Runtime,
+        description: movie.Plot,
+        image: movie.Poster,
+        country: movie.Country
+    }
+));
+renderMovies(movies);
+};
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+function renderMovies(movieArray){                                                              //here we create function 'renderMovies' which accept one parameter 'movieArray'. this function take movie from  array & display it.
+
+    const movieList = document.getElementById("movieList");                           //'getElementById' is a DOM method select and return element whose property is 'ID'
+
+    movieList.innerHTML = "";                                                                           // if we don't use this line then we will get movie again and again repeatedly. Clears all existing content from movieList by setting its HTML content to an empty string
+
+    if(!movieArray || movieArray.length === 0){                                                     
+    movieList.innerHTML = "<h3>No movies found</h3>";                                // if yes display this message
+    return;                                                                                                             // stop execution of rest of function
+    }
+
+    movieArray.forEach(movieFromDB => {
+        
+        const isFavorite = favorites.some(
+        fav => fav.id === movieFromDB.id
+        );
+
+        movieList.innerHTML += `
+
+        <div class="card">
+            <img src="${movieFromDB.image}" alt="${movieFromDB.title}">
+            <h3>${movieFromDB.title}</h3>
+            <p>${movieFromDB.year}</p>
+            
+            <button onclick="showDetails('${movieFromDB.id}')">
+                View Details
+            </button>
+            
+            <button 
+                onclick="addToFavorites('${movieFromDB.id}')"
+                ${isFavorite ? "disabled" : ""}
+            >
+                ${isFavorite ? "Added to Favorites" : "Add to Favorite"}
+            </button>
+        
+        </div>
+        `;
+    });
+}
+
+//-----------------------------------------------------------------------------------------------------------------------------------------
+
+function addToFavorites(id) {
+
+    const movieToAdd =
+    movies.find(movie => movie.id === id);
+
+    if (!movieToAdd) return;
+
+    const alreadyExists = favorites.some(
+        fav => fav.id === id
+    );
+
+    if (alreadyExists) {
+        alert("Movie already in favorites!");
+        return;
+    }
+
+    favorites.push(movieToAdd);
+
+    localStorage.setItem(
+        "favorites",
+        JSON.stringify(favorites)
+    );
+
+    renderMovies(movies);
+    renderFavorites();
+    updateFavoritesCount();
+}
+
+//----------------------------------------------------------------------------------
+
+function renderFavorites() {
+
+    const favoriteList =
+    document.getElementById("favoriteList");
+
+    favoriteList.innerHTML = "";
+
+    favorites.forEach(movie => {
+
+        favoriteList.innerHTML += `
+        
+        <div>
+            ${movie.title}
+
+            <button onclick="removeFromFavorite('${movie.id}')">
+                Remove
+            </button>
+
+            <br><br>
+        </div>
+        `;
+    });
+}
+
+renderFavorites();
+
+//------------------------------------------------------------------------------------
+
+function removeFromFavorite(id) {
+
+    favorites = favorites.filter(
+        movie => movie.id !== id
+    );
+
+    localStorage.setItem("favorites",JSON.stringify(favorites));
+
+    renderFavorites();
+    renderMovies(movies);
+    updateFavoritesCount();
+}
+
+//-------------------------------------------------------------------------------------
+
+function updateFavoritesCount() {
+
+    const favoritesTitle =
+    document.getElementById("favoritesTitle");
+
+    if (favorites.length === 0) {
+
+        favoritesTitle.textContent =
+        "No Favorites Yet";
+
+    } else {
+
+        favoritesTitle.textContent =
+        `Favorites (${favorites.length})`;
+
+    }
+}
+
+//------------------------------------------------------------------------------------------
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        loadRandomMovies();
+        renderFavorites();
+        updateFavoritesCount();
+    }
+);
+
+const searchInput =
+document.getElementById("searchText");
+
+searchInput.addEventListener(
+    "input",
+    searchMovies
+);
